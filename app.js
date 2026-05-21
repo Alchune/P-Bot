@@ -88,6 +88,37 @@ function init() {
   recalc();
 }
 
+function init() {
+  const statsGrid = document.getElementById('statsGrid');
+  stats.forEach((s) => {
+    const w = document.createElement('label');
+    w.innerHTML = `${s}<input id="stat_${s}" type="number" min="0" value="0"/>`;
+    statsGrid.append(w);
+  });
+
+  const body = document.getElementById('skillsBody');
+  skills.forEach(([name, formula], i) => {
+    const tr = document.createElement('tr');
+    tr.dataset.formula = formula;
+    tr.innerHTML = `
+      <td>${i + 1}</td>
+      <td>${name}</td>
+      <td>${formula}</td>
+      <td class="base-cell">0</td>
+      <td><input class="sp" type="number" min="0" value="0"></td>
+      <td class="total-cell"><input class="total" readonly></td>`;
+    body.append(tr);
+  });
+
+  document.querySelectorAll('#statsGrid input, .sp').forEach((el) => el.addEventListener('input', recalc));
+  document.getElementById('saveCharacter').addEventListener('click', saveCurrent);
+  document.getElementById('newCharacter').addEventListener('click', clearForm);
+  document.getElementById('deleteCharacter').addEventListener('click', deleteCurrent);
+  savedCharacters.addEventListener('change', (e) => loadData(allCharacters()[e.target.value]));
+  refreshSelect();
+  recalc();
+}
+
 function gatherData() {
   const data = { stats: {}, skills: [] };
   simpleFields.forEach((f) => (data[f] = document.getElementById(f).value));
