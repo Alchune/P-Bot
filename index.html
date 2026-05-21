@@ -20,10 +20,13 @@
 
       <section class="card resources-grid">
         <label>HP <input id="hp" type="number" min="0" /></label>
-        <label>AP <input id="ap" type="number" min="0" /></label>
-        <label>BP <input id="bp" type="number" min="0" /></label>
-        <label>TP <input id="tp" type="number" min="0" /></label>
-        <label>MP <input id="mp" type="number" min="0" /></label>
+        <label>AP <input id="ap" type="number" min="0" readonly /></label>
+        <label>BP <input id="bp" type="number" min="0" readonly /></label>
+        <label>TP <input id="tp" type="number" min="0" readonly /></label>
+        <label>MP <input id="mp" type="number" min="0" readonly /></label>
+        <label>MP атрибут
+          <select id="mpStat"><option value="INT">INT</option><option value="WIL">WIL</option></select>
+        </label>
       </section>
 
       <section class="card">
@@ -48,6 +51,11 @@
       <section class="card">
         <h2>Броня</h2>
         <textarea id="armor" rows="4" placeholder="Назва / част. тіла / захист / примітка"></textarea>
+      </section>
+
+      <section class="card">
+        <h2>Інвентар</h2>
+        <textarea id="inventory" rows="4" placeholder="Спорядження, предмети, ресурси..."></textarea>
       </section>
 
       <section class="toolbar card">
