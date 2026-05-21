@@ -3,75 +3,70 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Вампіри: Маскарад V5 — Редактор персонажа</title>
+    <title>Sargaroth RPG — Аркуш персонажа</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <header>
-      <h1>Вампіри: Маскарад V5</h1>
-      <p>Створення та збереження персонажів</p>
-      <div class="toolbar">
-        <button id="newCharacter">Новий</button>
-        <button id="saveCharacter">Зберегти</button>
-        <button id="deleteCharacter" class="danger">Видалити</button>
-        <label>Обраний персонаж:
-          <select id="savedCharacters"></select>
-        </label>
-      </div>
-    </header>
+    <main class="sheet">
+      <h1>Sargaroth RPG</h1>
 
-    <main>
-      <section class="card grid3">
-        <label>Ім'я<input id="name" /></label>
-        <label>Концепт<input id="concept" /></label>
-        <label>Тип хижака<input id="predatorType" /></label>
-        <label>Хроніка<input id="chronicle" /></label>
-        <label>Амбіції<input id="ambition" /></label>
-        <label>Клан<input id="clan" /></label>
-        <label>Сір<input id="sire" /></label>
-        <label>Бажання<input id="desire" /></label>
-        <label>Покоління<input id="generation" /></label>
+      <section class="card top-grid">
+        <label>Ім'я <input id="name" /></label>
+        <label>Раса <input id="race" /></label>
+        <label>Архетип <input id="archetype" /></label>
       </section>
 
-      <section class="card">
-        <h2>Характеристики</h2>
-        <div class="grid3 cols">
-          <div id="physical"></div>
-          <div id="social"></div>
-          <div id="mental"></div>
-        </div>
+      <section class="card stats-grid" id="statsGrid"></section>
+
+      <section class="card resources-grid">
+        <label>HP <input id="hp" type="number" min="0" /></label>
+        <label>AP <input id="ap" type="number" min="0" readonly /></label>
+        <label>BP <input id="bp" type="number" min="0" readonly /></label>
+        <label>TP <input id="tp" type="number" min="0" readonly /></label>
+        <label>MP <input id="mp" type="number" min="0" readonly /></label>
+        <label>MP атрибут
+          <select id="mpStat"><option value="INT">INT</option><option value="WIL">WIL</option></select>
+        </label>
       </section>
 
       <section class="card">
         <h2>Навички</h2>
-        <div class="grid3 cols">
-          <div id="skills1"></div>
-          <div id="skills2"></div>
-          <div id="skills3"></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Навичка</th><th>Базовий атрибут</th><th>База</th><th>SP</th><th>Разом</th>
+              </tr>
+            </thead>
+            <tbody id="skillsBody"></tbody>
+          </table>
         </div>
       </section>
 
-      <section class="card grid2">
-        <label>Дисципліни<textarea id="disciplines" rows="5"></textarea></label>
-        <label>Переваги і вади<textarea id="advantages" rows="5"></textarea></label>
-        <label>Історія<textarea id="story" rows="5"></textarea></label>
-        <label>Примітки<textarea id="notes" rows="5"></textarea></label>
+      <section class="card">
+        <h2>Озброєння</h2>
+        <textarea id="weapons" rows="4" placeholder="Назва / тип / шкода / мод / примітка"></textarea>
       </section>
 
-      <section class="card grid4">
-        <label>Голод<input id="hunger" type="number" min="0" max="5" /></label>
-        <label>Людяність<input id="humanity" type="number" min="0" max="10" /></label>
-        <label>Сила крові<input id="bloodPotency" type="number" min="0" max="10" /></label>
-        <label>Резонанс<input id="resonance" /></label>
+      <section class="card">
+        <h2>Броня</h2>
+        <textarea id="armor" rows="4" placeholder="Назва / част. тіла / захист / примітка"></textarea>
+      </section>
+
+      <section class="card">
+        <h2>Інвентар</h2>
+        <textarea id="inventory" rows="4" placeholder="Спорядження, предмети, ресурси..."></textarea>
+      </section>
+
+      <section class="toolbar card">
+        <button id="newCharacter">Новий</button>
+        <button id="saveCharacter">Зберегти</button>
+        <button id="deleteCharacter" class="danger">Видалити</button>
+        <label>Обраний персонаж
+          <select id="savedCharacters"></select>
+        </label>
       </section>
     </main>
-
-    <template id="dotField">
-      <div class="dot-row">
-        <span class="label"></span>
-        <input type="number" min="0" max="5" />
-      </div>
-    </template>
 
     <script src="app.js"></script>
   </body>
