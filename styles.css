@@ -11,7 +11,7 @@ h1 { text-align: center; margin: .3rem 0 1rem; letter-spacing: .04em; }
 .top-grid, .stats-grid, .resources-grid { display: grid; gap: .6rem; }
 .top-grid { grid-template-columns: repeat(3, 1fr); }
 .stats-grid { grid-template-columns: repeat(6, 1fr); }
-.resources-grid { grid-template-columns: repeat(5, 1fr); }
+.resources-grid { grid-template-columns: repeat(6, 1fr); }
 label { display: flex; flex-direction: column; gap: .25rem; font-weight: 700; }
 input, select, textarea { width: 100%; border: 1px solid var(--line); padding: .35rem .4rem; background: #fff; font: inherit; }
 .table-wrap { overflow-x: auto; }
@@ -28,3 +28,6 @@ button.danger { background: #ffe8e8; }
 @media (max-width: 900px) {
   .top-grid, .stats-grid, .resources-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+.inline-toolbar { margin-top: .6rem; }
+.skillName { width: 100%; }

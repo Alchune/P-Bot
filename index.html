@@ -19,11 +19,21 @@
       <section class="card stats-grid" id="statsGrid"></section>
 
       <section class="card resources-grid">
-        <label>HP <input id="hp" type="number" min="0" /></label>
-        <label>AP <input id="ap" type="number" min="0" readonly /></label>
-        <label>BP <input id="bp" type="number" min="0" readonly /></label>
-        <label>TP <input id="tp" type="number" min="0" readonly /></label>
-        <label>MP <input id="mp" type="number" min="0" readonly /></label>
+        <label>HP (макс) <input id="hp" type="number" min="0" /></label>
+        <label>HP (реальна) <input id="hpCurrent" type="number" min="0" /></label>
+
+        <label>AP (макс) <input id="ap" type="number" min="0" readonly /></label>
+        <label>AP (реальна) <input id="apCurrent" type="number" min="0" /></label>
+
+        <label>BP (макс) <input id="bp" type="number" min="0" readonly /></label>
+        <label>BP (реальна) <input id="bpCurrent" type="number" min="0" /></label>
+
+        <label>TP (макс) <input id="tp" type="number" min="0" readonly /></label>
+        <label>TP (реальна) <input id="tpCurrent" type="number" min="0" /></label>
+
+        <label>MP (макс) <input id="mp" type="number" min="0" readonly /></label>
+        <label>MP (реальна) <input id="mpCurrent" type="number" min="0" /></label>
+
         <label>MP атрибут
           <select id="mpStat"><option value="INT">INT</option><option value="WIL">WIL</option></select>
         </label>
@@ -40,6 +50,9 @@
             </thead>
             <tbody id="skillsBody"></tbody>
           </table>
+        </div>
+        <div class="toolbar inline-toolbar">
+          <button id="addSkill">+ Додати навичку</button>
         </div>
       </section>
 
