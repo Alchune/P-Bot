@@ -35,6 +35,7 @@ function calcBase(formula) {
 }
 
 function recalcResources() {
+  dom.hp.value = num('CON');
   dom.bp.value = Math.floor(num('STR') / 10);
   dom.tp.value = Math.floor(num('DEX') / 10);
   dom.ap.value = Math.floor((num('CON') + num('WIL')) / 10);
