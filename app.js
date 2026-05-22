@@ -1,9 +1,9 @@
-const stats = ['STR', 'DEX', 'CON', 'INT', 'WIL', 'CHA'];
+const stats = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'];
 const skills = [
   ['Атлетика', 'STR'], ['Акробатика', 'DEX'], ['Витривалість', 'CON'], ['Ближня зброя', 'STR'],
   ['Стрілецька зброя', 'DEX'], ['Беззбройний бій', 'STR'], ['Непомітність', 'DEX'], ['Крадіжка', 'DEX'],
-  ['Замки / Пастки', 'DEX+INT'], ['Уважність', 'WIL'], ['Інтуїція', 'INT+WIL'], ['Аркана', 'INT'],
-  ['Історія', 'INT'], ['Ремесло', 'INT+DEX'], ['Медицина', 'INT+WIL'], ['Переконання', 'CHA'],
+  ['Замки / Пастки', 'DEX+INT'], ['Уважність', 'WIS'], ['Інтуїція', 'INT+WIS'], ['Аркана', 'INT'],
+  ['Історія', 'INT'], ['Ремесло', 'INT+DEX'], ['Медицина', 'INT+WIS'], ['Переконання', 'CHA'],
   ['Залякування', 'STR+CHA'], ['Магія', 'MAGIC'],
 ];
 
@@ -31,7 +31,7 @@ function calcBase(formula) {
 function recalcResources() {
   document.getElementById('bp').value = Math.floor(num('STR') / 10);
   document.getElementById('tp').value = Math.floor(num('DEX') / 10);
-  document.getElementById('ap').value = Math.floor((num('CON') + num('WIL')) / 10);
+  document.getElementById('ap').value = Math.floor((num('CON') + num('WIS')) / 10);
   const mpStat = document.getElementById('mpStat').value;
   document.getElementById('mp').value = num(mpStat);
 }
@@ -64,7 +64,7 @@ function init() {
     const tr = document.createElement('tr');
     tr.dataset.formula = formula;
     const formulaCell = formula === 'MAGIC'
-      ? '<select id="magicStat"><option value="INT">INT</option><option value="WIL">WIL</option></select>'
+      ? '<select id="magicStat"><option value="INT">INT</option><option value="WIS">WIS</option></select>'
       : `<span class="formula-display">${formula}</span>`;
     tr.innerHTML = `
       <td>${i + 1}</td>
@@ -80,37 +80,6 @@ function init() {
   document.getElementById('skillsBody').addEventListener('input', (e) => {
     if (e.target.id === 'magicStat') recalc();
   });
-  document.getElementById('saveCharacter').addEventListener('click', saveCurrent);
-  document.getElementById('newCharacter').addEventListener('click', clearForm);
-  document.getElementById('deleteCharacter').addEventListener('click', deleteCurrent);
-  savedCharacters.addEventListener('change', (e) => loadData(allCharacters()[e.target.value]));
-  refreshSelect();
-  recalc();
-}
-
-function init() {
-  const statsGrid = document.getElementById('statsGrid');
-  stats.forEach((s) => {
-    const w = document.createElement('label');
-    w.innerHTML = `${s}<input id="stat_${s}" type="number" min="0" value="0"/>`;
-    statsGrid.append(w);
-  });
-
-  const body = document.getElementById('skillsBody');
-  skills.forEach(([name, formula], i) => {
-    const tr = document.createElement('tr');
-    tr.dataset.formula = formula;
-    tr.innerHTML = `
-      <td>${i + 1}</td>
-      <td>${name}</td>
-      <td>${formula}</td>
-      <td class="base-cell">0</td>
-      <td><input class="sp" type="number" min="0" value="0"></td>
-      <td class="total-cell"><input class="total" readonly></td>`;
-    body.append(tr);
-  });
-
-  document.querySelectorAll('#statsGrid input, .sp').forEach((el) => el.addEventListener('input', recalc));
   document.getElementById('saveCharacter').addEventListener('click', saveCurrent);
   document.getElementById('newCharacter').addEventListener('click', clearForm);
   document.getElementById('deleteCharacter').addEventListener('click', deleteCurrent);
@@ -135,6 +104,9 @@ function loadData(data) {
     if (el) el.value = data[f] ?? (el.tagName === 'SELECT' ? el.options[0].value : '');
   });
   stats.forEach((s) => (document.getElementById(`stat_${s}`).value = data.stats?.[s] ?? 0));
+  if ((data.stats?.WIS ?? '') === '' && data.stats?.WIL !== undefined) {
+    document.getElementById('stat_WIS').value = data.stats.WIL;
+  }
   const magicSel = document.getElementById('magicStat');
   if (magicSel) magicSel.value = data.magicStat ?? 'INT';
   document.querySelectorAll('#skillsBody tr').forEach((row, i) => {
