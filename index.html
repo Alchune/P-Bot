@@ -21,19 +21,14 @@
       <section class="card resources-grid">
         <label>HP (макс) <input id="hp" type="number" min="0" readonly /></label>
         <label>HP (реальна) <input id="hpCurrent" type="number" min="0" /></label>
-
         <label>AP (макс) <input id="ap" type="number" min="0" readonly /></label>
         <label>AP (реальна) <input id="apCurrent" type="number" min="0" /></label>
-
         <label>BP (макс) <input id="bp" type="number" min="0" readonly /></label>
         <label>BP (реальна) <input id="bpCurrent" type="number" min="0" /></label>
-
         <label>TP (макс) <input id="tp" type="number" min="0" readonly /></label>
         <label>TP (реальна) <input id="tpCurrent" type="number" min="0" /></label>
-
         <label>MP (макс) <input id="mp" type="number" min="0" readonly /></label>
         <label>MP (реальна) <input id="mpCurrent" type="number" min="0" /></label>
-
         <label>MP атрибут
           <select id="mpStat"><option value="INT">INT</option><option value="WIL">WIL</option></select>
         </label>
@@ -41,29 +36,26 @@
 
       <section class="card">
         <h2>Навички</h2>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th><th>Навичка</th><th>Базовий атрибут</th><th>База</th><th>SP</th><th>Разом</th><th>Дія</th>
-              </tr>
-            </thead>
-            <tbody id="skillsBody"></tbody>
-          </table>
-        </div>
-        <div class="toolbar inline-toolbar">
-          <button id="addSkill">+ Додати навичку</button>
-        </div>
+        <div class="table-wrap"><table><thead><tr><th>#</th><th>Навичка</th><th>Базовий атрибут</th><th>База</th><th>SP</th><th>Разом</th><th>Дія</th></tr></thead><tbody id="skillsBody"></tbody></table></div>
+        <div class="toolbar inline-toolbar"><button id="addSkill">+ Додати навичку</button></div>
+      </section>
+
+      <section class="card">
+        <h2>Таланти</h2>
+        <div class="table-wrap"><table><thead><tr><th>#</th><th>Назва</th><th>Інформація</th><th>Дія</th></tr></thead><tbody id="talentsBody"></tbody></table></div>
+        <div class="toolbar inline-toolbar"><button id="addTalent">+ Додати талант</button></div>
       </section>
 
       <section class="card">
         <h2>Озброєння</h2>
-        <textarea id="weapons" rows="4" placeholder="Назва / тип / шкода / мод / примітка"></textarea>
+        <div class="table-wrap"><table><thead><tr><th>#</th><th>Назва</th><th>Тип</th><th>Шкода</th><th>Мод</th><th>Примітка</th><th>Дія</th></tr></thead><tbody id="weaponsBody"></tbody></table></div>
+        <div class="toolbar inline-toolbar"><button id="addWeapon">+ Додати зброю</button></div>
       </section>
 
       <section class="card">
         <h2>Броня</h2>
-        <textarea id="armor" rows="4" placeholder="Назва / част. тіла / захист / примітка"></textarea>
+        <div class="table-wrap"><table><thead><tr><th>#</th><th>Назва</th><th>Част. тіла</th><th>Захист</th><th>Примітка</th><th>Дія</th></tr></thead><tbody id="armorBody"></tbody></table></div>
+        <div class="toolbar inline-toolbar"><button id="addArmor">+ Додати броню</button></div>
       </section>
 
       <section class="card">
@@ -77,12 +69,9 @@
         <button id="shareCharacter">Поділитись</button>
         <button id="importCharacter">Імпорт</button>
         <button id="deleteCharacter" class="danger">Видалити</button>
-        <label>Обраний персонаж
-          <select id="savedCharacters"></select>
-        </label>
+        <label>Обраний персонаж <select id="savedCharacters"></select></label>
       </section>
     </main>
-
     <script src="app.js"></script>
   </body>
 </html>
