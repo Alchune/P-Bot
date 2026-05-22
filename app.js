@@ -1,58 +1,123 @@
-const groups = {
-  physical: ['Міць', 'Спритність', 'Витривалість'],
-  social: ['Харизма', 'Маніпуляція', 'Витримка'],
-  mental: ['Інтелект', 'Кмітливість', 'Рішучість'],
-  skills1: ['Атлетизм', 'Боротьба', 'Виживання', 'Керування', 'Крадійство', 'Непомітність', 'Ремесло', 'Рукопашний бій', 'Стрільба'],
-  skills2: ['Виступ', 'Вуличний досвід', 'Етикет', 'Залякування', 'Лідерство', 'Переконливість', 'Проникливість', 'Розуміння тварин', 'Хитрість'],
-  skills3: ['Знання', 'Медицина', 'Наука', 'Окультизм', 'Політика', 'Розслідування', 'Спостережливість', 'Технології', 'Фінанси'],
-};
+const stats = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'];
+const skills = [
+  ['Атлетика', 'STR'], ['Акробатика', 'DEX'], ['Витривалість', 'CON'], ['Ближня зброя', 'STR'],
+  ['Стрілецька зброя', 'DEX'], ['Беззбройний бій', 'STR'], ['Непомітність', 'DEX'], ['Крадіжка', 'DEX'],
+  ['Замки / Пастки', 'DEX+INT'], ['Уважність', 'WIS'], ['Інтуїція', 'INT+WIS'], ['Аркана', 'INT'],
+  ['Історія', 'INT'], ['Ремесло', 'INT+DEX'], ['Медицина', 'INT+WIS'], ['Переконання', 'CHA'],
+  ['Залякування', 'STR+CHA'], ['Магія', 'MAGIC'],
+];
 
-const simpleFields = ['name','concept','predatorType','chronicle','ambition','clan','sire','desire','generation','disciplines','advantages','story','notes','hunger','humanity','bloodPotency','resonance'];
+const simpleFields = ['name', 'race', 'archetype', 'hp', 'ap', 'bp', 'tp', 'mp', 'mpStat', 'weapons', 'armor', 'inventory'];
 const savedCharacters = document.getElementById('savedCharacters');
 
-function initDots() {
-  const tpl = document.getElementById('dotField');
-  Object.entries(groups).forEach(([id, labels]) => {
-    const container = document.getElementById(id);
-    labels.forEach((text) => {
-      const row = tpl.content.firstElementChild.cloneNode(true);
-      row.querySelector('.label').textContent = text;
-      const input = row.querySelector('input');
-      input.id = `${id}_${text}`;
-      container.append(row);
-    });
+function num(id) {
+  return Number(document.getElementById(`stat_${id}`).value || 0);
+}
+
+function getMagicStat() {
+  const sel = document.getElementById('magicStat');
+  return sel ? sel.value : 'INT';
+}
+
+function calcBase(formula) {
+  if (formula === 'MAGIC') return Math.floor(num(getMagicStat()) / 2);
+  if (formula.includes('+')) {
+    const [a, b] = formula.split('+');
+    return Math.floor((num(a) + num(b)) / 4);
+  }
+  return Math.floor(num(formula) / 2);
+}
+
+function recalcResources() {
+  document.getElementById('bp').value = Math.floor(num('STR') / 10);
+  document.getElementById('tp').value = Math.floor(num('DEX') / 10);
+  document.getElementById('ap').value = Math.floor((num('CON') + num('WIS')) / 10);
+  const mpStat = document.getElementById('mpStat').value;
+  document.getElementById('mp').value = num(mpStat);
+}
+
+function recalc() {
+  recalcResources();
+  document.querySelectorAll('tr[data-formula]').forEach((row) => {
+    const formula = row.dataset.formula;
+    const base = calcBase(formula);
+    row.querySelector('.base-cell').textContent = base;
+    const sp = Number(row.querySelector('.sp').value || 0);
+    row.querySelector('.total').value = base + sp;
+    if (formula === 'MAGIC') {
+      const display = row.querySelector('.formula-display');
+      display.textContent = getMagicStat();
+    }
   });
 }
 
+function init() {
+  const statsGrid = document.getElementById('statsGrid');
+  stats.forEach((s) => {
+    const w = document.createElement('label');
+    w.innerHTML = `${s}<input id="stat_${s}" type="number" min="0" value="0"/>`;
+    statsGrid.append(w);
+  });
+
+  const body = document.getElementById('skillsBody');
+  skills.forEach(([name, formula], i) => {
+    const tr = document.createElement('tr');
+    tr.dataset.formula = formula;
+    const formulaCell = formula === 'MAGIC'
+      ? '<select id="magicStat"><option value="INT">INT</option><option value="WIS">WIS</option></select>'
+      : `<span class="formula-display">${formula}</span>`;
+    tr.innerHTML = `
+      <td>${i + 1}</td>
+      <td>${name}</td>
+      <td><span class="formula-display">${formula === 'MAGIC' ? '' : formula}</span>${formula === 'MAGIC' ? formulaCell : ''}</td>
+      <td class="base-cell">0</td>
+      <td><input class="sp" type="number" min="0" value="0"></td>
+      <td class="total-cell"><input class="total" readonly></td>`;
+    body.append(tr);
+  });
+
+  document.querySelectorAll('#statsGrid input, .sp, #mpStat').forEach((el) => el.addEventListener('input', recalc));
+  document.getElementById('skillsBody').addEventListener('input', (e) => {
+    if (e.target.id === 'magicStat') recalc();
+  });
+  document.getElementById('saveCharacter').addEventListener('click', saveCurrent);
+  document.getElementById('newCharacter').addEventListener('click', clearForm);
+  document.getElementById('deleteCharacter').addEventListener('click', deleteCurrent);
+  savedCharacters.addEventListener('change', (e) => loadData(allCharacters()[e.target.value]));
+  refreshSelect();
+  recalc();
+}
+
 function gatherData() {
-  const data = {};
+  const data = { stats: {}, skills: [] };
   simpleFields.forEach((f) => (data[f] = document.getElementById(f).value));
-  data.stats = {};
-  document.querySelectorAll('.dot-row input').forEach((i) => (data.stats[i.id] = i.value));
+  data.magicStat = getMagicStat();
+  stats.forEach((s) => (data.stats[s] = document.getElementById(`stat_${s}`).value));
+  document.querySelectorAll('#skillsBody tr').forEach((row) => data.skills.push({ sp: row.querySelector('.sp').value }));
   return data;
 }
 
 function loadData(data) {
   if (!data) return;
-  simpleFields.forEach((f) => (document.getElementById(f).value = data[f] ?? ''));
-  document.querySelectorAll('.dot-row input').forEach((i) => (i.value = data.stats?.[i.id] ?? 0));
+  simpleFields.forEach((f) => {
+    const el = document.getElementById(f);
+    if (el) el.value = data[f] ?? (el.tagName === 'SELECT' ? el.options[0].value : '');
+  });
+  stats.forEach((s) => (document.getElementById(`stat_${s}`).value = data.stats?.[s] ?? 0));
+  if ((data.stats?.WIS ?? '') === '' && data.stats?.WIL !== undefined) {
+    document.getElementById('stat_WIS').value = data.stats.WIL;
+  }
+  const magicSel = document.getElementById('magicStat');
+  if (magicSel) magicSel.value = data.magicStat ?? 'INT';
+  document.querySelectorAll('#skillsBody tr').forEach((row, i) => {
+    row.querySelector('.sp').value = data.skills?.[i]?.sp ?? 0;
+  });
+  recalc();
 }
 
-function allCharacters() {
-  return JSON.parse(localStorage.getItem('v5chars') || '{}');
-}
+function allCharacters() { return JSON.parse(localStorage.getItem('sargaroth_chars') || '{}'); }
 
-function saveCurrent() {
-  const data = gatherData();
-  const key = data.name?.trim();
-  if (!key) return alert("Вкажіть ім'я персонажа");
-  const db = allCharacters();
-  db[key] = data;
-  localStorage.setItem('v5chars', JSON.stringify(db));
-  refreshSelect(key);
-}
-
-function refreshSelect(selectName = '') {
+function refreshSelect(selected = '') {
   const db = allCharacters();
   savedCharacters.innerHTML = '<option value="">-- Оберіть --</option>';
   Object.keys(db).sort().forEach((name) => {
@@ -61,26 +126,29 @@ function refreshSelect(selectName = '') {
     opt.textContent = name;
     savedCharacters.append(opt);
   });
-  savedCharacters.value = selectName;
+  savedCharacters.value = selected;
 }
 
-function clearForm() {
-  loadData({ stats: {} });
-  savedCharacters.value = '';
+function clearForm() { loadData({ stats: {}, skills: [], mpStat: 'INT', magicStat: 'INT' }); savedCharacters.value = ''; }
+
+function saveCurrent() {
+  const data = gatherData();
+  const key = data.name?.trim();
+  if (!key) return alert("Вкажіть ім'я персонажа");
+  const db = allCharacters();
+  db[key] = data;
+  localStorage.setItem('sargaroth_chars', JSON.stringify(db));
+  refreshSelect(key);
 }
 
-document.getElementById('saveCharacter').addEventListener('click', saveCurrent);
-document.getElementById('newCharacter').addEventListener('click', clearForm);
-document.getElementById('deleteCharacter').addEventListener('click', () => {
+function deleteCurrent() {
   const key = savedCharacters.value;
   if (!key) return;
   const db = allCharacters();
   delete db[key];
-  localStorage.setItem('v5chars', JSON.stringify(db));
-  refreshSelect();
+  localStorage.setItem('sargaroth_chars', JSON.stringify(db));
   clearForm();
-});
-savedCharacters.addEventListener('change', (e) => loadData(allCharacters()[e.target.value]));
+  refreshSelect();
+}
 
-initDots();
-refreshSelect();
+init();
