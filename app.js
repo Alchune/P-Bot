@@ -46,6 +46,12 @@ function recalc() {
     row.querySelector('.total').value = base + Number(row.querySelector('.sp').value || 0);
     if (formula === 'MAGIC') row.querySelector('.formula-display').textContent = getMagicStat();
   });
+  document.getElementById('saveCharacter').addEventListener('click', saveCurrent);
+  document.getElementById('newCharacter').addEventListener('click', clearForm);
+  document.getElementById('deleteCharacter').addEventListener('click', deleteCurrent);
+  savedCharacters.addEventListener('change', (e) => loadData(allCharacters()[e.target.value]));
+  refreshSelect();
+  recalc();
 }
 
 function skillFormulaCell(formula, isMagic = false) {
