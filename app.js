@@ -15,14 +15,14 @@ const simpleFields = [
 
 const dom = {};
 let rafScheduled = false;
+let skillRows = [];
 
 function num(id) {
   return Number(dom.statInputs[id].value || 0);
 }
 
 function getMagicStat() {
-  const magicSelect = dom.skillsBody.querySelector('#magicStat');
-  return magicSelect ? magicSelect.value : 'INT';
+  return dom.magicStat ? dom.magicStat.value : 'INT';
 }
 
 function calcBase(formula) {
@@ -42,16 +42,16 @@ function recalcResources() {
 }
 
 function recalcRow(row) {
-  const formula = row.dataset.formula === 'CUSTOM' ? row.querySelector('.customFormula').value : row.dataset.formula;
+  const formula = row.dataset.formula === 'CUSTOM' ? row.customFormulaEl.value : row.dataset.formula;
   const base = calcBase(formula);
-  row.querySelector('.base-cell').textContent = base;
-  row.querySelector('.total').value = base + Number(row.querySelector('.sp').value || 0);
-  if (row.dataset.formula === 'MAGIC') row.querySelector('.formula-display').textContent = getMagicStat();
+  row.baseCell.textContent = base;
+  row.totalEl.value = base + Number(row.spEl.value || 0);
+  if (row.dataset.formula === 'MAGIC' && row.formulaDisplayEl) row.formulaDisplayEl.textContent = getMagicStat();
 }
 
 function recalcAll() {
   recalcResources();
-  dom.skillsBody.querySelectorAll('tr[data-formula]').forEach(recalcRow);
+  for (let i = 0; i < skillRows.length; i += 1) recalcRow(skillRows[i]);
 }
 
 function scheduleRecalcAll() {
@@ -61,33 +61,6 @@ function scheduleRecalcAll() {
     rafScheduled = false;
     recalcAll();
   });
-
-  baseSkills.forEach(([name, formula]) => appendSkillRow(name, formula));
-  renumberSkills();
-
-  document.querySelectorAll('#statsGrid input, #mpStat').forEach((el) => el.addEventListener('input', recalc));
-  document.getElementById('skillsBody').addEventListener('input', (e) => {
-    const row = e.target.closest('tr');
-    if (!row) return;
-    const formula = effectiveFormula(row);
-    const base = calcBase(formula);
-    row.querySelector('.base-cell').textContent = base;
-    row.querySelector('.total').value = base + Number(row.querySelector('.sp').value || 0);
-    if (row.dataset.formula === 'MAGIC') row.querySelector('.formula-display').textContent = getMagicStat();
-  });
-
-  document.getElementById('addSkill').addEventListener('click', () => {
-    appendSkillRow('', 'CUSTOM', 0, 'STR');
-    renumberSkills();
-    recalc();
-  });
-
-  document.getElementById('saveCharacter').addEventListener('click', saveCurrent);
-  document.getElementById('newCharacter').addEventListener('click', clearForm);
-  document.getElementById('deleteCharacter').addEventListener('click', deleteCurrent);
-  savedCharacters.addEventListener('change', (e) => loadData(allCharacters()[e.target.value]));
-  refreshSelect();
-  recalc();
 }
 
 function skillFormulaCell(formula) {
@@ -107,7 +80,13 @@ function createSkillRow(name, formula, sp = 0, customFormula = 'STR') {
     <td class="base-cell">0</td>
     <td><input class="sp" type="number" min="0" value="${sp}"></td>
     <td class="total-cell"><input class="total" readonly></td>`;
-  if (formula === 'CUSTOM') tr.querySelector('.customFormula').value = customFormula;
+  tr.baseCell = tr.querySelector('.base-cell');
+  tr.spEl = tr.querySelector('.sp');
+  tr.totalEl = tr.querySelector('.total');
+  tr.formulaDisplayEl = tr.querySelector('.formula-display');
+  tr.customFormulaEl = tr.querySelector('.customFormula');
+  if (formula === 'CUSTOM' && tr.customFormulaEl) tr.customFormulaEl.value = customFormula;
+  if (formula === 'MAGIC') dom.magicStat = tr.querySelector('#magicStat');
   return tr;
 }
 
@@ -116,7 +95,8 @@ function fillSkillsRows(items) {
   items.forEach((item) => fragment.append(createSkillRow(item.name, item.formula, item.sp ?? 0, item.customFormula ?? 'STR')));
   dom.skillsBody.innerHTML = '';
   dom.skillsBody.append(fragment);
-  dom.skillsBody.querySelectorAll('.idx').forEach((el, i) => (el.textContent = i + 1));
+  skillRows = Array.from(dom.skillsBody.querySelectorAll('tr[data-formula]'));
+  for (let i = 0; i < skillRows.length; i += 1) skillRows[i].querySelector('.idx').textContent = i + 1;
 }
 
 function init() {
@@ -144,6 +124,7 @@ function init() {
     const row = e.target.closest('tr');
     if (!row) return;
     if (e.target.id === 'magicStat') {
+      dom.magicStat = e.target;
       scheduleRecalcAll();
       return;
     }
@@ -151,9 +132,11 @@ function init() {
   });
 
   document.getElementById('addSkill').addEventListener('click', () => {
-    dom.skillsBody.append(createSkillRow('', 'CUSTOM', 0, 'STR'));
-    dom.skillsBody.querySelectorAll('.idx').forEach((el, i) => (el.textContent = i + 1));
-    recalcRow(dom.skillsBody.lastElementChild);
+    const row = createSkillRow('', 'CUSTOM', 0, 'STR');
+    dom.skillsBody.append(row);
+    skillRows.push(row);
+    for (let i = 0; i < skillRows.length; i += 1) skillRows[i].querySelector('.idx').textContent = i + 1;
+    recalcRow(row);
   });
 
   document.getElementById('saveCharacter').addEventListener('click', saveCurrent);
@@ -170,14 +153,15 @@ function gatherData() {
   simpleFields.forEach((f) => (data[f] = dom[f].value));
   data.magicStat = getMagicStat();
   stats.forEach((s) => (data.stats[s] = dom.statInputs[s].value));
-  dom.skillsBody.querySelectorAll('tr').forEach((row) => {
+  for (let i = 0; i < skillRows.length; i += 1) {
+    const row = skillRows[i];
     data.skills.push({
       name: row.dataset.custom === '1' ? row.querySelector('.skillName').value : row.children[1].textContent,
       formula: row.dataset.formula,
       customFormula: row.dataset.formula === 'CUSTOM' ? row.querySelector('.customFormula').value : '',
       sp: row.querySelector('.sp').value,
     });
-  });
+  }
   return data;
 }
 
@@ -197,8 +181,7 @@ function loadData(data) {
     fillSkillsRows(baseSkills.map(([name, formula]) => ({ name, formula, sp: 0 })));
   }
 
-  const magicSel = dom.skillsBody.querySelector('#magicStat');
-  if (magicSel) magicSel.value = data.magicStat ?? 'INT';
+  if (dom.magicStat) dom.magicStat.value = data.magicStat ?? 'INT';
   recalcAll();
 }
 
