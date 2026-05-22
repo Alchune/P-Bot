@@ -4,7 +4,7 @@ const baseSkills = [
   ['Стрілецька зброя', 'DEX'], ['Беззбройний бій', 'STR'], ['Непомітність', 'DEX'], ['Крадіжка', 'DEX'],
   ['Замки / Пастки', 'DEX+INT'], ['Уважність', 'WIL'], ['Інтуїція', 'INT+WIL'], ['Аркана', 'INT'],
   ['Історія', 'INT'], ['Ремесло', 'INT+DEX'], ['Медицина', 'INT+WIL'], ['Переконання', 'CHA'],
-  ['Залякування', 'STR+CHA'], ['Магія', 'MAGIC'],
+  ['Залякування', 'STR+CHA'], ['Природа', 'INT'],
 ];
 
 const simpleFields = [
@@ -17,16 +17,9 @@ const dom = {};
 let rafScheduled = false;
 let skillRows = [];
 
-function num(id) {
-  return Number(dom.statInputs[id].value || 0);
-}
-
-function getMagicStat() {
-  return dom.magicStat ? dom.magicStat.value : 'INT';
-}
+function num(id) { return Number(dom.statInputs[id].value || 0); }
 
 function calcBase(formula) {
-  if (formula === 'MAGIC') return Math.floor(num(getMagicStat()) / 2);
   if (formula.includes('+')) {
     const [a, b] = formula.split('+');
     return Math.floor((num(a) + num(b)) / 4);
@@ -47,7 +40,6 @@ function recalcRow(row) {
   const base = calcBase(formula);
   row.baseCell.textContent = base;
   row.totalEl.value = base + Number(row.spEl.value || 0);
-  if (row.dataset.formula === 'MAGIC' && row.formulaDisplayEl) row.formulaDisplayEl.textContent = getMagicStat();
 }
 
 function recalcAll() {
@@ -62,12 +54,19 @@ function scheduleRecalcAll() {
     rafScheduled = false;
     recalcAll();
   });
+
+  document.getElementById('saveCharacter').addEventListener('click', saveCurrent);
+  document.getElementById('newCharacter').addEventListener('click', clearForm);
+  document.getElementById('deleteCharacter').addEventListener('click', deleteCurrent);
+  dom.savedCharacters.addEventListener('change', (e) => loadData(allCharacters()[e.target.value]));
+
+  refreshSelect();
+  recalcAll();
 }
 
 function skillFormulaCell(formula) {
-  if (formula === 'MAGIC') return '<span class="formula-display"></span><select id="magicStat"><option value="INT">INT</option><option value="WIL">WIL</option></select>';
   if (formula === 'CUSTOM') return `<select class="customFormula"><option value="STR">STR</option><option value="DEX">DEX</option><option value="CON">CON</option><option value="INT">INT</option><option value="WIL">WIL</option><option value="CHA">CHA</option><option value="STR+DEX">STR+DEX</option><option value="STR+CON">STR+CON</option><option value="STR+INT">STR+INT</option><option value="STR+WIL">STR+WIL</option><option value="STR+CHA">STR+CHA</option><option value="DEX+CON">DEX+CON</option><option value="DEX+INT">DEX+INT</option><option value="DEX+WIL">DEX+WIL</option><option value="DEX+CHA">DEX+CHA</option><option value="CON+INT">CON+INT</option><option value="CON+WIL">CON+WIL</option><option value="CON+CHA">CON+CHA</option><option value="INT+WIL">INT+WIL</option><option value="INT+CHA">INT+CHA</option><option value="WIL+CHA">WIL+CHA</option></select>`;
-  return `<span class="formula-display">${formula}</span>`;
+  return `<span>${formula}</span>`;
 }
 
 function createSkillRow(name, formula, sp = 0, customFormula = 'STR') {
@@ -84,10 +83,8 @@ function createSkillRow(name, formula, sp = 0, customFormula = 'STR') {
   tr.baseCell = tr.querySelector('.base-cell');
   tr.spEl = tr.querySelector('.sp');
   tr.totalEl = tr.querySelector('.total');
-  tr.formulaDisplayEl = tr.querySelector('.formula-display');
   tr.customFormulaEl = tr.querySelector('.customFormula');
   if (formula === 'CUSTOM' && tr.customFormulaEl) tr.customFormulaEl.value = customFormula;
-  if (formula === 'MAGIC') dom.magicStat = tr.querySelector('#magicStat');
   return tr;
 }
 
@@ -124,11 +121,6 @@ function init() {
   dom.skillsBody.addEventListener('input', (e) => {
     const row = e.target.closest('tr');
     if (!row) return;
-    if (e.target.id === 'magicStat') {
-      dom.magicStat = e.target;
-      scheduleRecalcAll();
-      return;
-    }
     recalcRow(row);
   });
 
@@ -152,7 +144,6 @@ function init() {
 function gatherData() {
   const data = { stats: {}, skills: [] };
   simpleFields.forEach((f) => (data[f] = dom[f].value));
-  data.magicStat = getMagicStat();
   stats.forEach((s) => (data.stats[s] = dom.statInputs[s].value));
   for (let i = 0; i < skillRows.length; i += 1) {
     const row = skillRows[i];
@@ -182,7 +173,6 @@ function loadData(data) {
     fillSkillsRows(baseSkills.map(([name, formula]) => ({ name, formula, sp: 0 })));
   }
 
-  if (dom.magicStat) dom.magicStat.value = data.magicStat ?? 'INT';
   recalcAll();
 }
 
@@ -201,7 +191,7 @@ function refreshSelect(selected = '') {
 }
 
 function clearForm() {
-  loadData({ stats: {}, skills: [], mpStat: 'INT', magicStat: 'INT' });
+  loadData({ stats: {}, skills: [], mpStat: 'INT' });
   dom.savedCharacters.value = '';
 }
 
