@@ -1,9 +1,9 @@
-const stats = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'];
+const stats = ['STR', 'DEX', 'CON', 'INT', 'WIL', 'CHA'];
 const skills = [
   ['Атлетика', 'STR'], ['Акробатика', 'DEX'], ['Витривалість', 'CON'], ['Ближня зброя', 'STR'],
   ['Стрілецька зброя', 'DEX'], ['Беззбройний бій', 'STR'], ['Непомітність', 'DEX'], ['Крадіжка', 'DEX'],
-  ['Замки / Пастки', 'DEX+INT'], ['Уважність', 'WIS'], ['Інтуїція', 'INT+WIS'], ['Аркана', 'INT'],
-  ['Історія', 'INT'], ['Ремесло', 'INT+DEX'], ['Медицина', 'INT+WIS'], ['Переконання', 'CHA'],
+  ['Замки / Пастки', 'DEX+INT'], ['Уважність', 'WIL'], ['Інтуїція', 'INT+WIL'], ['Аркана', 'INT'],
+  ['Історія', 'INT'], ['Ремесло', 'INT+DEX'], ['Медицина', 'INT+WIL'], ['Переконання', 'CHA'],
   ['Залякування', 'STR+CHA'], ['Магія', 'MAGIC'],
 ];
 
@@ -31,7 +31,7 @@ function calcBase(formula) {
 function recalcResources() {
   document.getElementById('bp').value = Math.floor(num('STR') / 10);
   document.getElementById('tp').value = Math.floor(num('DEX') / 10);
-  document.getElementById('ap').value = Math.floor((num('CON') + num('WIS')) / 10);
+  document.getElementById('ap').value = Math.floor((num('CON') + num('WIL')) / 10);
   const mpStat = document.getElementById('mpStat').value;
   document.getElementById('mp').value = num(mpStat);
 }
@@ -64,7 +64,7 @@ function init() {
     const tr = document.createElement('tr');
     tr.dataset.formula = formula;
     const formulaCell = formula === 'MAGIC'
-      ? '<select id="magicStat"><option value="INT">INT</option><option value="WIS">WIS</option></select>'
+      ? '<select id="magicStat"><option value="INT">INT</option><option value="WIL">WIL</option></select>'
       : `<span class="formula-display">${formula}</span>`;
     tr.innerHTML = `
       <td>${i + 1}</td>
@@ -104,8 +104,8 @@ function loadData(data) {
     if (el) el.value = data[f] ?? (el.tagName === 'SELECT' ? el.options[0].value : '');
   });
   stats.forEach((s) => (document.getElementById(`stat_${s}`).value = data.stats?.[s] ?? 0));
-  if ((data.stats?.WIS ?? '') === '' && data.stats?.WIL !== undefined) {
-    document.getElementById('stat_WIS').value = data.stats.WIL;
+  if ((data.stats?.WIL ?? '') === '' && data.stats?.WIL !== undefined) {
+    document.getElementById('stat_WIL').value = data.stats.WIL;
   }
   const magicSel = document.getElementById('magicStat');
   if (magicSel) magicSel.value = data.magicStat ?? 'INT';
