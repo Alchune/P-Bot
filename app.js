@@ -54,14 +54,6 @@ function scheduleRecalcAll() {
     rafScheduled = false;
     recalcAll();
   });
-
-  document.getElementById('saveCharacter').addEventListener('click', saveCurrent);
-  document.getElementById('newCharacter').addEventListener('click', clearForm);
-  document.getElementById('deleteCharacter').addEventListener('click', deleteCurrent);
-  dom.savedCharacters.addEventListener('change', (e) => loadData(allCharacters()[e.target.value]));
-
-  refreshSelect();
-  recalcAll();
 }
 
 function skillFormulaCell(formula) {
@@ -193,14 +185,28 @@ async function shareCurrent() {
   if (!data.name?.trim()) return alert("Спочатку вкажіть ім'я персонажа");
   const payload = encodeCharacter(data);
   const shareUrl = `${location.origin}${location.pathname}#char=${payload}`;
+
   if (navigator.share) {
     try {
       await navigator.share({ title: `Sargaroth: ${data.name}`, text: `Персонаж: ${data.name}`, url: shareUrl });
+      alert('Посилання на персонажа надіслано');
       return;
-    } catch (_) {}
+    } catch (err) {
+      if (err?.name === 'AbortError') return;
+    }
   }
-  await navigator.clipboard.writeText(shareUrl);
-  alert('Посилання скопійовано в буфер обміну');
+
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(shareUrl);
+      alert('Посилання скопійовано в буфер обміну');
+      return;
+    }
+  } catch (_) {
+    // fallback below
+  }
+
+  window.prompt('Скопіюй посилання на персонажа:', shareUrl);
 }
 
 function importPrompt() {
