@@ -54,6 +54,14 @@ function scheduleRecalcAll() {
     rafScheduled = false;
     recalcAll();
   });
+
+  document.getElementById('saveCharacter').addEventListener('click', saveCurrent);
+  document.getElementById('newCharacter').addEventListener('click', clearForm);
+  document.getElementById('deleteCharacter').addEventListener('click', deleteCurrent);
+  dom.savedCharacters.addEventListener('change', (e) => loadData(allCharacters()[e.target.value]));
+
+  refreshSelect();
+  recalcAll();
 }
 
 function skillFormulaCell(formula) {
