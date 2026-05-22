@@ -71,7 +71,8 @@ function createSkillRow(name, formula, sp = 0, customFormula = 'STR') {
     <td>${skillFormulaCell(formula)}</td>
     <td class="base-cell">0</td>
     <td><input class="sp" type="number" min="0" value="${sp}"></td>
-    <td class="total-cell"><input class="total" readonly></td>`;
+    <td class="total-cell"><input class="total" readonly></td>
+    <td><button class="removeSkill danger" type="button" title="Видалити навичку">✕</button></td>`;
   tr.baseCell = tr.querySelector('.base-cell');
   tr.spEl = tr.querySelector('.sp');
   tr.totalEl = tr.querySelector('.total');
@@ -80,13 +81,17 @@ function createSkillRow(name, formula, sp = 0, customFormula = 'STR') {
   return tr;
 }
 
+function renumberSkillIndexes() {
+  for (let i = 0; i < skillRows.length; i += 1) skillRows[i].querySelector('.idx').textContent = i + 1;
+}
+
 function fillSkillsRows(items) {
   const fragment = document.createDocumentFragment();
   items.forEach((item) => fragment.append(createSkillRow(item.name, item.formula, item.sp ?? 0, item.customFormula ?? 'STR')));
   dom.skillsBody.innerHTML = '';
   dom.skillsBody.append(fragment);
   skillRows = Array.from(dom.skillsBody.querySelectorAll('tr[data-formula]'));
-  for (let i = 0; i < skillRows.length; i += 1) skillRows[i].querySelector('.idx').textContent = i + 1;
+  renumberSkillIndexes();
 }
 
 function init() {
@@ -116,11 +121,22 @@ function init() {
     recalcRow(row);
   });
 
+  dom.skillsBody.addEventListener('click', (e) => {
+    const btn = e.target.closest('.removeSkill');
+    if (!btn) return;
+    const row = btn.closest('tr');
+    if (!row) return;
+    row.remove();
+    skillRows = skillRows.filter((r) => r !== row);
+    renumberSkillIndexes();
+    scheduleRecalcAll();
+  });
+
   document.getElementById('addSkill').addEventListener('click', () => {
     const row = createSkillRow('', 'CUSTOM', 0, 'STR');
     dom.skillsBody.append(row);
     skillRows.push(row);
-    for (let i = 0; i < skillRows.length; i += 1) skillRows[i].querySelector('.idx').textContent = i + 1;
+    renumberSkillIndexes();
     recalcRow(row);
   });
 
@@ -180,6 +196,26 @@ function decodeCharacter(encoded) {
   return JSON.parse(decodeURIComponent(escape(atob(encoded))));
 }
 
+function legacyCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  ta.style.pointerEvents = 'none';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  let ok = false;
+  try {
+    ok = document.execCommand('copy');
+  } catch (_) {
+    ok = false;
+  }
+  document.body.removeChild(ta);
+  return ok;
+}
+
 async function shareCurrent() {
   const data = gatherData();
   if (!data.name?.trim()) return alert("Спочатку вкажіть ім'я персонажа");
@@ -194,6 +230,11 @@ async function shareCurrent() {
     } catch (err) {
       if (err?.name === 'AbortError') return;
     }
+  }
+
+  if (legacyCopy(shareUrl)) {
+    alert('Посилання скопійовано в буфер обміну');
+    return;
   }
 
   try {
