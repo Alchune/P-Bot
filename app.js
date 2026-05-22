@@ -61,6 +61,33 @@ function scheduleRecalcAll() {
     rafScheduled = false;
     recalcAll();
   });
+
+  baseSkills.forEach(([name, formula]) => appendSkillRow(name, formula));
+  renumberSkills();
+
+  document.querySelectorAll('#statsGrid input, #mpStat').forEach((el) => el.addEventListener('input', recalc));
+  document.getElementById('skillsBody').addEventListener('input', (e) => {
+    const row = e.target.closest('tr');
+    if (!row) return;
+    const formula = effectiveFormula(row);
+    const base = calcBase(formula);
+    row.querySelector('.base-cell').textContent = base;
+    row.querySelector('.total').value = base + Number(row.querySelector('.sp').value || 0);
+    if (row.dataset.formula === 'MAGIC') row.querySelector('.formula-display').textContent = getMagicStat();
+  });
+
+  document.getElementById('addSkill').addEventListener('click', () => {
+    appendSkillRow('', 'CUSTOM', 0, 'STR');
+    renumberSkills();
+    recalc();
+  });
+
+  document.getElementById('saveCharacter').addEventListener('click', saveCurrent);
+  document.getElementById('newCharacter').addEventListener('click', clearForm);
+  document.getElementById('deleteCharacter').addEventListener('click', deleteCurrent);
+  savedCharacters.addEventListener('change', (e) => loadData(allCharacters()[e.target.value]));
+  refreshSelect();
+  recalc();
 }
 
 function skillFormulaCell(formula) {
