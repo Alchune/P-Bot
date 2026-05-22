@@ -134,10 +134,13 @@ function init() {
 
   document.getElementById('saveCharacter').addEventListener('click', saveCurrent);
   document.getElementById('newCharacter').addEventListener('click', clearForm);
+  document.getElementById('shareCharacter').addEventListener('click', shareCurrent);
+  document.getElementById('importCharacter').addEventListener('click', importPrompt);
   document.getElementById('deleteCharacter').addEventListener('click', deleteCurrent);
   dom.savedCharacters.addEventListener('change', (e) => loadData(allCharacters()[e.target.value]));
 
   refreshSelect();
+  tryImportFromUrl();
   recalcAll();
 }
 
@@ -174,6 +177,70 @@ function loadData(data) {
   }
 
   recalcAll();
+}
+
+
+function encodeCharacter(data) {
+  return btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+}
+
+function decodeCharacter(encoded) {
+  return JSON.parse(decodeURIComponent(escape(atob(encoded))));
+}
+
+async function shareCurrent() {
+  const data = gatherData();
+  if (!data.name?.trim()) return alert("Спочатку вкажіть ім'я персонажа");
+  const payload = encodeCharacter(data);
+  const shareUrl = `${location.origin}${location.pathname}#char=${payload}`;
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: `Sargaroth: ${data.name}`, text: `Персонаж: ${data.name}`, url: shareUrl });
+      return;
+    } catch (_) {}
+  }
+  await navigator.clipboard.writeText(shareUrl);
+  alert('Посилання скопійовано в буфер обміну');
+}
+
+function importPrompt() {
+  const raw = prompt('Встав посилання або код персонажа:');
+  if (!raw) return;
+  let encoded = raw.trim();
+  const marker = '#char=';
+  const idx = encoded.indexOf(marker);
+  if (idx !== -1) encoded = encoded.slice(idx + marker.length);
+  try {
+    const data = decodeCharacter(encoded);
+    loadData(data);
+    if (data.name?.trim()) {
+      const db = allCharacters();
+      db[data.name.trim()] = data;
+      localStorage.setItem('sargaroth_chars', JSON.stringify(db));
+      refreshSelect(data.name.trim());
+    }
+    alert('Персонажа імпортовано');
+  } catch {
+    alert('Невірний формат імпорту');
+  }
+}
+
+function tryImportFromUrl() {
+  if (!location.hash.startsWith('#char=')) return;
+  const encoded = location.hash.slice('#char='.length);
+  try {
+    const data = decodeCharacter(encoded);
+    loadData(data);
+    if (data.name?.trim()) {
+      const db = allCharacters();
+      db[data.name.trim()] = data;
+      localStorage.setItem('sargaroth_chars', JSON.stringify(db));
+      refreshSelect(data.name.trim());
+    }
+    history.replaceState(null, '', location.pathname + location.search);
+  } catch {
+    // ignore broken links
+  }
 }
 
 function allCharacters() { return JSON.parse(localStorage.getItem('sargaroth_chars') || '{}'); }
